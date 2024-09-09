@@ -1,0 +1,137 @@
+hola buen dia, esta es el desafio final del moudlo sql y este es el detalle de comandos ejecutados.
+
+-- CONSTRAINT - significa RESTICCION
+-- ALTER - significa ALTERAR o CAMBIAR
+
+create database "desafio-alfredo-arredondo-161";
+\c "desafio-alfredo-arredondo-161";
+
+-- 1. Revisa el tipo de relación y crea el modelo correspondiente. Respeta las claves primarias, foráneas y tipos de datos.
+
+-- drop table public."Peliculas";
+
+CREATE TABLE public."Peliculas" (
+	id integer NOT NULL,
+	nombre varchar(255) NULL,
+	anno integer NULL,
+	CONSTRAINT peliculas_id_pk PRIMARY KEY (id)
+);
+
+CREATE TABLE public."Tags" (
+	id integer NOT NULL,
+	tag varchar(32) NULL,
+	CONSTRAINT tags_peliculas_id_fk FOREIGN KEY (id) REFERENCES public."Peliculas"(id)
+);
+
+-- 2. Inserta 5 películas y 5 tags; la primera película debe tener 3 tags asociados, la segunda película debe tener 2 tags asociados.
+
+-- el id usado para el ingreso de las peliculas es id de la pagina IMDB.
+
+INSERT INTO public."Peliculas" (id, nombre, anno) VALUES(0095444, 'Klowns asesinos', 1988);
+INSERT INTO public."Peliculas" (id, nombre, anno) VALUES(0083658, 'Blade Runner', 1982);
+INSERT INTO public."Peliculas" (id, nombre, anno) VALUES(0093870, 'Robocop, el defensor del futuro', 1988);
+INSERT INTO public."Peliculas" (id, nombre, anno) VALUES(0088247, 'Terminator', 1984);
+INSERT INTO public."Peliculas" (id, nombre, anno) VALUES(0084787, 'La cosa del otro mundo', 1982);
+
+INSERT INTO public."Tags" (id, tag) VALUES(0095444, 'Horror');
+INSERT INTO public."Tags" (id, tag) VALUES(0095444, 'Sci-Fi');
+INSERT INTO public."Tags" (id, tag) VALUES(0095444, 'Comedy');
+INSERT INTO public."Tags" (id, tag) VALUES(0083658, 'Sci-Fi');
+INSERT INTO public."Tags" (id, tag) VALUES(0083658, 'Drama');
+
+-- 3. Cuenta la cantidad de tags que tiene cada película. Si una película no tiene tags debe mostrar 0.
+
+select count(t.id) as cantidad, p.nombre from "Peliculas" p left join "Tags" t on t.id = p.id group by p.nombre order by cantidad desc
+
+-- 4. Crea las tablas correspondientes respetando los nombres, tipos, claves primarias y foráneas y tipos de datos.
+
+-- drop table public."Usuarios";
+
+CREATE TABLE public."Usuarios" (
+	id integer NOT NULL,
+	nombre varchar(255) NULL,
+	edad integer NULL,
+	CONSTRAINT "Usuarios_id__pk" PRIMARY KEY (id)
+);
+
+-- drop table public."Preguntas";
+
+CREATE TABLE public."Preguntas" (
+	id integer NOT NULL,
+	pregunta varchar(255) NULL,
+	respuesta_correcta varchar NULL,
+	CONSTRAINT "Preguntas_id_pk" PRIMARY KEY (id)
+);
+
+-- drop table public."Respuestas";
+
+CREATE TABLE public."Respuestas" (
+	id integer NOT NULL,
+	respuesta varchar(255) NULL,
+	usuarios_id integer NULL,
+	pregunta_id integer NULL,
+	CONSTRAINT "Respuestas_id_pk" PRIMARY KEY (id),
+	CONSTRAINT respuestas_id_usuarios_fk FOREIGN KEY (usuarios_id) REFERENCES public."Usuarios"(id),
+	CONSTRAINT respuestas_id_preguntas_fk FOREIGN KEY (pregunta_id) REFERENCES public."Preguntas"(id)
+);
+
+-- 5. Agrega 5 usuarios y 5 preguntas.
+
+INSERT INTO public."Usuarios" (id, nombre, edad) VALUES(0, 'cmaturana', 32);
+INSERT INTO public."Usuarios" (id, nombre, edad) VALUES(1, 'fvasquez', 45);
+INSERT INTO public."Usuarios" (id, nombre, edad) VALUES(2, 'mvidal', 29);
+INSERT INTO public."Usuarios" (id, nombre, edad) VALUES(3, 'rpalacios', 38);
+INSERT INTO public."Usuarios" (id, nombre, edad) VALUES(4, 'mmartinez', 56);
+
+INSERT INTO public."Preguntas" (id, pregunta, respuesta_correcta) VALUES(0, 'Que significa SQL?', 'significa Structured Query Language');
+INSERT INTO public."Preguntas" (id, pregunta, respuesta_correcta) VALUES(1, 'Que significa DBMS?', 'significa Database Management System');
+INSERT INTO public."Preguntas" (id, pregunta, respuesta_correcta) VALUES(2, 'Que significa RDBMS?', 'significa Relational DataBase Management System');
+INSERT INTO public."Preguntas" (id, pregunta, respuesta_correcta) VALUES(3, 'Cómo que comando se filtran datos en una consulta SQL?', 'Con el comando WHERE');
+INSERT INTO public."Preguntas" (id, pregunta, respuesta_correcta) VALUES(4, 'Se pueden crear campos con nombre en mayusculas?', 'si, deben ir entre comillas siempre al utilizarlas');
+
+-- a. La primera pregunta debe estar respondida correctamente dos veces, por dos usuarios diferentes.
+
+INSERT INTO public."Respuestas" (id, respuesta, usuarios_id, pregunta_id) VALUES(0, 'significa Structured Query Language', 0, 0);
+INSERT INTO public."Respuestas" (id, respuesta, usuarios_id, pregunta_id) VALUES(1, 'significa Structured Query Language', 2, 0);
+
+-- b. La segunda pregunta debe estar contestada correctamente solo por un usuario.
+
+INSERT INTO public."Respuestas" (id, respuesta, usuarios_id, pregunta_id) VALUES(2, 'significa Database Management System', 1, 1);
+
+-- c. Las otras tres preguntas deben tener respuestas incorrectas.
+
+INSERT INTO public."Respuestas" (id, respuesta, usuarios_id, pregunta_id) VALUES(3, 'significa Relax DataBase Management System', 2, 0);
+INSERT INTO public."Respuestas" (id, respuesta, usuarios_id, pregunta_id) VALUES(4, 'el comando es Order by', 3, 0);
+INSERT INTO public."Respuestas" (id, respuesta, usuarios_id, pregunta_id) VALUES(5, 'se pueden usar sin problemas', 4, 0);
+
+-- Contestada correctamente significa que la respuesta indicada en la tabla respuestas es exactamente igual al texto indicado en la tabla de preguntas.
+
+-- 6. Cuenta la cantidad de respuestas correctas totales por usuario (independiente de la pregunta).
+
+select count(p.pregunta) from "Preguntas" p , "Respuestas" r where p.respuesta_correcta = r.respuesta 
+
+-- 7. Por cada pregunta, en la tabla preguntas, cuenta cuántos usuarios respondieron correctamente.
+
+select count(p.pregunta), p.pregunta from "Preguntas" p , "Respuestas" r where p.respuesta_correcta = r.respuesta group by p.pregunta, p.id 
+
+-- 8. Implementa un borrado en cascada de las respuestas al borrar un usuario. Prueba la implementación borrando el primer usuario.
+
+ALTER TABLE public."Respuestas" DROP CONSTRAINT respuestas_id_usuarios_fk;
+ALTER TABLE public."Respuestas" ADD CONSTRAINT respuestas_id_usuarios_fk FOREIGN KEY (usuarios_id) REFERENCES public."Usuarios"(id) ON DELETE CASCADE;
+
+DELETE FROM public."Usuarios" WHERE id=0;
+
+SELECT * from "Respuestas";
+SELECT * from "Usuarios";
+
+-- 9. Crea una restricción que impida insertar usuarios menores de 18 años en la base de datos.
+
+ALTER TABLE public."Usuarios" ADD CONSTRAINT usuarios_check_valor CHECK (edad > 17);
+INSERT INTO public."Usuarios" (id, nombre, edad) VALUES(0, 'cmaturana', 17);
+INSERT INTO public."Usuarios" (id, nombre, edad) VALUES(0, 'cmaturana', 32);
+-- 10. Altera la tabla existente de usuarios agregando el campo email. Debe tener la restricción de ser único.
+
+ALTER TABLE public."Usuarios" ADD email varchar NULL;
+ALTER TABLE public."Usuarios" ADD CONSTRAINT usuarios_email_unique UNIQUE (email);
+
+-- si creo el campo email como NOT NULL entrega error ya que esos valores estan vacios actualmente.
